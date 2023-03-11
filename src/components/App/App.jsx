@@ -1,10 +1,12 @@
 import { Component } from "react";
 import { nanoid } from 'nanoid';
-import Notiflix from 'notiflix';
+import Swal from 'sweetalert2';
 
 import { ContactForm } from "components/ContactForm /ContactForm";
 import { ContactList } from "components/ContactList/ContactList";
 import { Filter } from "components/Filter/Filter";
+
+import { MainSection, ContactsTitle, Title } from './App.styled';
 
 
 export class App extends Component {
@@ -18,25 +20,40 @@ export class App extends Component {
     filter: '',
   };
 
-  addContacts = ({name, number}) => {
+  addContacts = ({ name, number }) => {
     const newObj = {
       id: nanoid(),
       name,
       number,
     };
+    console.log(newObj)
+
+    const dublicateOfName = this.state.contacts.some(
+      contact => contact.name.toLowerCase() === name.toLowerCase()
+    );
+
+    const dublicateOfNumber = this.state.contacts.some(
+      contact =>
+        contact.number.replace(/-/g, '').replace(/ /g, '') ===
+        number.replace(/ /g, '').replace(/-/g, '')
+    );
+
+    if (dublicateOfName) {
+      Swal.fire(`${name} is alredy in contacts`)
+     return false
+    }
+
+    if (dublicateOfNumber) {
+       Swal.fire(`${number} is alredy in contacts`);
+      return false
+    }
 
     this.setState(({ contacts }) => ({
       contacts: [newObj, ...contacts],
     }));
 
-    if
-    (this.state.contacts.some(contact => contact === name)) {
-      Notiflix.Notify.failure(`${name} is alredy in contacts`);
-      }
-
-    return true;
+    console.log(number.replace(/-/g, ''));
   };
-
 
   filterContacts = event => {
     this.setState({
@@ -60,18 +77,18 @@ export class App extends Component {
 
   render() {
     const { filter, contacts } = this.state;
-     const visibleContacts = this.getVisibleContacts();
+    const visibleContacts = this.getVisibleContacts();
     return (
-      <section>
-        <h1>Phonebook</h1>
+      <MainSection>
+        <Title>Phonebook</Title>
         <ContactForm onSubmit={this.addContacts} />
-        <h2>Contacts</h2>
-        <Filter value={filter} onChange={this.filterContacts} />
+        <ContactsTitle>Contacts</ContactsTitle>
+        <Filter value={filter} contacts={contacts} onChange={this.filterContacts} />
         <ContactList
           contacts={visibleContacts}
           deleteContact={this.deleteContact}
         />
-      </section>
+      </MainSection>
     );
   }
 };
